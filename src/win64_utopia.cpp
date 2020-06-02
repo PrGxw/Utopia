@@ -459,6 +459,12 @@ int WinMain(HINSTANCE Instance,
     //  HICON     hIcon;
     WindowClass.lpszClassName = "Utopia";
 
+    LARGE_INTEGER PerfCountFrequencyResult;
+    QueryPerformanceFrequency(&PerfCountFrequencyResult);
+    int64 PerfCountFrequency = PerfCountFrequencyResult.QuadPart;
+
+    int64 LastCycleCount = __rdtsc();
+
     if (RegisterClassEx(&WindowClass))
     {
         HWND Window = CreateWindowEx(0, WindowClass.lpszClassName, "Utopia",
@@ -491,8 +497,12 @@ int WinMain(HINSTANCE Instance,
             Win32FillSoundBuffer(&SoundOutput, 0, SoundOutput.LatencySampleCount * SoundOutput.BytesPerSample);
             GlobalSecondaryBuffer->Play(0, 0, DSBPLAY_LOOPING);
 
+            LARGE_INTEGER LastCounter;
+            QueryPerformanceCounter(&LastCounter);
+
             while (Running)
             {
+
                 MSG Message;
                 while (PeekMessage(&Message, 0, 0, 0, PM_REMOVE))
                 {
@@ -531,7 +541,7 @@ int WinMain(HINSTANCE Instance,
 
                         SoundOutput.Frequency = 512 + StickY / (32000.0f) * 256;
                         SoundOutput.WavePeriod = SoundOutput.SamplesPerSecond / SoundOutput.Frequency;
-                        
+
                         XOffset += StickX / 2048;
                         YOffset += StickY / 2048;
                     }
@@ -569,6 +579,24 @@ int WinMain(HINSTANCE Instance,
                 Win32DisplayBufferInWindow(&GlobalBackBuffer, DeviceContext, Dimension.Width, Dimension.Height);
 
                 ReleaseDC(Window, DeviceContext);
+
+                LARGE_INTEGER EndCounter;
+                QueryPerformanceCounter(&EndCounter);
+
+                //TODO: Display the counter value here
+                int64 CounterElapsed = EndCounter.QuadPart - LastCounter.QuadPart;
+                int32 MSPerFrame = (int32)((CounterElapsed * 1000) / PerfCountFrequency);
+                int32 FPS = PerfCountFrequency / CounterElapsed;
+
+                int64 EndCycleCount = __rdtsc();
+                int64 CyclesElapsed = EndCycleCount - LastCycleCount;
+                int32 MCPS = CyclesElapsed / 1e6;
+
+                char Buffer[256];
+                wsprintfA(Buffer, "%dms/f | %df/s | %dmc/f\n", MSPerFrame, FPS, MCPS);
+                OutputDebugStringA(Buffer);
+                LastCounter = EndCounter;
+                LastCycleCount = EndCycleCount;
             }
         }
         else
