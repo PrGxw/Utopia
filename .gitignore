@@ -473,3 +473,4 @@ healthchecksdb
 MigrationBackup/
 
 # End of https://www.gitignore.io/api/c,c++,emacs,visualstudio
+bin
