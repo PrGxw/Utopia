@@ -9,8 +9,6 @@
 #include <xinput.h>
 #include <dsound.h>
 
-// TODO(casey): Implement sine ourselves
-#include <math.h>
 
 struct win64_offscreen_buffer
 {
@@ -26,6 +24,19 @@ struct win64_window_dimension
 {
     int Width;
     int Height;
+};
+
+struct win64_sound_output
+{
+    int SamplesPerSecond;
+    int Frequency;
+    int16 Magnitude;
+    uint32 RunningSampleIndex;
+    int NumSamplePeriod;
+    int BytesPerSample;
+    int SecondaryBufferSize;
+    real32 tSine;
+    int LatencySampleCount;
 };
 
 // TODO(casey): This is a global for now.

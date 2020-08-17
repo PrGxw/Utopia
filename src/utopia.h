@@ -2,6 +2,8 @@
 #define UTOPIA
 
 #include <stdint.h>
+// Implement sine ourselves
+#include <math.h>
 
 #define internal static 
 #define local_persist static 
@@ -41,6 +43,15 @@ struct game_offscreen_buffer
     int Height;
     int Pitch;
 };
-void GameUpdateAndRender(game_offscreen_buffer *Buffer, int BlueOffset, int GreenOffset);
+
+struct game_sound_buffer
+{
+    void* Cache;
+    int SamplesToWrite;
+    int SamplesPerSecond;
+};
+
+void GameUpdateAndRender(game_offscreen_buffer *Buffer, int BlueOffset, int GreenOffset,
+                         game_sound_buffer *SoundBuffer, int Frequency);
 
 #endif /* UTOPIA */

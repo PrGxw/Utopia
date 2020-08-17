@@ -1,4 +1,24 @@
 #include "utopia.h"
+using namespace std;
+
+internal void GameOutputSound(game_sound_buffer *SoundBuffer, int Frequency)
+{
+    int Magnitude = 3000;
+    // int Frequency = 256;
+    int NumSamplePeriod = SoundBuffer->SamplesPerSecond / Frequency;
+    local_persist real32 tSine;
+    int16 *Cache = (int16 *)SoundBuffer->Cache;
+
+    for (int i = 0; i < SoundBuffer->SamplesToWrite; ++i)
+        {
+            real32 SineValue = sinf(tSine);
+            int16 SampleValue = (int16)(SineValue * Magnitude);
+            *Cache++ = SampleValue;
+            *Cache++ = SampleValue;
+
+            tSine += 2.0f * Pi32 * 1.0f / (real32) NumSamplePeriod;
+        }
+}
 
 internal void
 RenderWeirdGradient(game_offscreen_buffer *Buffer, int BlueOffset, int GreenOffset)
@@ -26,9 +46,10 @@ RenderWeirdGradient(game_offscreen_buffer *Buffer, int BlueOffset, int GreenOffs
 }
 
 void
-GameUpdateAndRender(game_offscreen_buffer *Buffer, int BlueOffset, int GreenOffset)
+GameUpdateAndRender(game_offscreen_buffer *Buffer, int BlueOffset, int GreenOffset,
+                    game_sound_buffer *SoundBuffer, int Frequency)
 {
-    // int BlueOffset = 0;
-    // int GreenOffset = 0;
+    // TODO: Allow sample offsets here for more robust platform options
+    GameOutputSound(SoundBuffer, Frequency);
     RenderWeirdGradient(Buffer, BlueOffset, GreenOffset);
 }
