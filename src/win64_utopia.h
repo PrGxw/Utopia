@@ -9,6 +9,7 @@
 #include <xinput.h>
 #include <dsound.h>
 
+#define ArrayCount(Array) (sizeof(Array)  / sizeof(Array[0]))
 
 struct win64_offscreen_buffer
 {
@@ -29,10 +30,7 @@ struct win64_window_dimension
 struct win64_sound_output
 {
     int SamplesPerSecond;
-    int Frequency;
-    int16 Magnitude;
     uint32 RunningSampleIndex;
-    int NumSamplePeriod;
     int BytesPerSample;
     int SecondaryBufferSize;
     real32 tSine;
