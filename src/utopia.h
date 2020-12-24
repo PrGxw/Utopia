@@ -82,10 +82,24 @@ struct game_controller_input{
 };
 
 struct game_input{
+    // TODO: insert clock value here.
     game_controller_input Controllers[4];
 };
 
-void GameUpdateAndRender(game_input *Input,
+struct game_state {
+    int BlueOffset;
+    int GreenOffset;
+    int Frequency;
+};
+
+struct game_memory {
+    bool32 isInitialized;
+    uint64 MemorySize;
+    void * Memory;
+};
+
+void GameUpdateAndRender(game_memory *Memory,
+                         game_input *Input,
                          game_offscreen_buffer *Buffer,
                          game_sound_buffer *SoundBuffer);
 

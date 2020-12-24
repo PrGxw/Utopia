@@ -9,6 +9,27 @@
 #include <xinput.h>
 #include <dsound.h>
 
+/*
+ * Note:
+ * INTERNAL_BUILD: 
+ *  0 - Build for public release
+ *  1 - Build for developer
+ * SLOW_BUILD: 
+ *  0 - No slow code allowed
+ *  1 - slow code allowed
+ */
+
+#if SLOW_BUILD
+#define Assert(Expression) if (!(Expression)) {*(int *)0 = 0;} 
+#else
+#define Assert(Expression)
+#endif
+
+#define Kilobytes(Value) ((Value)*1024)
+#define Megabytes(Value) (Kilobytes(Value)*1024)
+#define Gigabytes(Value) (Megabytes(Value)*1024)
+#define Terabytes(Value) (Gigabytes(Value)*1024)
+
 #define ArrayCount(Array) (sizeof(Array)  / sizeof(Array[0]))
 
 struct win64_offscreen_buffer

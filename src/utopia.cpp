@@ -45,19 +45,22 @@ RenderWeirdGradient(game_offscreen_buffer *Buffer, int BlueOffset, int GreenOffs
     }
 }
 
-void GameUpdateAndRender(game_input *Input,
+void GameUpdateAndRender(game_memory *Memory,
+                         game_input *Input,
                          game_offscreen_buffer *Buffer,
                          game_sound_buffer *SoundBuffer)
 {
-    local_persist int BlueOffset;
-    local_persist int GreenOffset;
-    local_persist int Frequency = 256;
+    game_state *GameState = (game_state *) Memory->Memory;
+    if (!Memory->isInitialized){
+        GameState->Frequency = 256;
+        Memory->isInitialized = true;
+    }
 
     game_controller_input *Input0 = &Input->Controllers[0];
     if (Input0->IsAnalog)
     {
-        Frequency = 256 + (int)(128.0f * (Input0->EndX));
-        BlueOffset += (int)4.0f * (Input0->EndY);
+        GameState->Frequency = 256 + (int)(128.0f * (Input0->EndX));
+        GameState->BlueOffset += (int)4.0f * (Input0->EndY);
     }
     else
     {
@@ -67,10 +70,10 @@ void GameUpdateAndRender(game_input *Input,
     // Input.AButtenHalfTransitionCount
     if (Input0->Down.EndedDown)
     {
-        GreenOffset += 1;
+        GameState->GreenOffset += 1;
     }
 
     // TODO: Allow sample offsets here for more robust platform options
-    GameOutputSound(SoundBuffer, Frequency);
-    RenderWeirdGradient(Buffer, BlueOffset, GreenOffset);
+    GameOutputSound(SoundBuffer, GameState->Frequency);
+    RenderWeirdGradient(Buffer, GameState->BlueOffset, GameState->GreenOffset);
 }
