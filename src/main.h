@@ -6,13 +6,13 @@
 #define local_persist static
 #define global_variable static
 
-struct win64_window_dimension
+struct Win64WindowDimension
 {
     int Width;
     int Height;
 };
 
-struct win64_screen_buffer
+struct Win64ScreenBuffer
 {
     // NOTE(casey): Pixels are alwasy 32-bits wide, Memory Order BB GG RR XX
     BITMAPINFO Info;
@@ -22,6 +22,14 @@ struct win64_screen_buffer
     int Pitch;
 };
 
+struct Point
+{
+    float x;
+    float y;
+    float z;
+    float padding;
+};
+
 global_variable bool32 GlobalRunning;
-global_variable win64_screen_buffer ScreenBuffer;
+global_variable Win64ScreenBuffer ScreenBuffer;
 global_variable float theta;
