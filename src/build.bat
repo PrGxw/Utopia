@@ -2,7 +2,7 @@
 
 mkdir ..\bin
 pushd ..\bin
-cl -DSLOW_BUILD=1 -DINTERNAL_BUILD=1 -Zi ..\src\main.cpp ..\src\matrix.cpp user32.lib gdi32.lib
+cl -DSLOW_BUILD=1 -DINTERNAL_BUILD=1 -Zi ..\src\main.cpp ..\src\matrix.cpp ..\src\engine.cpp user32.lib gdi32.lib
 ::cl -Zi ..\src\matrix.cpp
 ::cl -Zi ..\src\mywork.cpp
 popd

@@ -1,6 +1,6 @@
 #include <windows.h>
 #include "data_types.h"
-#include "matrix.h"
+#include "engine.h"
 
 #define internal static
 #define local_persist static
@@ -20,14 +20,6 @@ struct Win64ScreenBuffer
     int Width;
     int Height;
     int Pitch;
-};
-
-struct Point
-{
-    float x;
-    float y;
-    float z;
-    float padding;
 };
 
 global_variable bool32 GlobalRunning;
