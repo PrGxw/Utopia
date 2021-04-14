@@ -14,25 +14,26 @@ struct MatrixDimension
     int col;
 };
 
-void
-MatrixMultiply(float *matrix1, int m1_row, int m1_col,
-                float *matrix2, int m2_row, int m2_col,
-                float *result);
+void MatrixMultiply(float *matrix1, int m1_row, int m1_col,
+                    float *matrix2, int m2_row, int m2_col,
+                    float *result);
 
-void
-InspectMatrix(float *matrix, int num_row, int num_col);
+void InspectMatrix(float *matrix, int num_row, int num_col);
 
 static float
 MatrixDeterminant(float *matrix, int len);
 
 static void
 MatrixOfMinors(float *matrix, int len,
-                 float *result);
+               float *result);
 
 static void
 MatrixTranspose(float *matrix, int num_row, int num_col,
-                 float *result);
+                float *result);
 
 static void
 MatrixScalarMultiply(float *matrix, int num_row, int num_col, float scalar);
+
+void MatrixInverse(float *matrix, int len,
+                   float *result);
 #endif /* MATRIX */

@@ -100,8 +100,8 @@ MatrixDeterminant(float *matrix, int len)
 }
 
 // https://www.mathsisfun.com/algebra/matrix-inverse-minors-cofactors-adjugate.html
-static void
-matrix_inverse(float *matrix, int len,
+ void
+MatrixInverse(float *matrix, int len,
                float *result)
 {
     MatrixOfMinors(matrix, len, result);
@@ -137,6 +137,7 @@ void FreeMatrix(float *matrix)
 {
     free(matrix);
 }
+
 void MatrixMultiply(float *matrix1, int m1_row, int m1_col,
                     float *matrix2, int m2_row, int m2_col,
                     float *result)
@@ -215,13 +216,13 @@ void InspectMatrix(float *matrix, int num_row, int num_col)
 //     printf("\nmatrix inverse\n");
 //     float g[3][3] = {{3,0,2}, {2,0,-2}, {0,1,1}};
 //     float inversed[3][3];
-//     matrix_inverse((float *)g, MatrixRowSize(g), (float *)inversed);
+//     MatrixInverse((float *)g, MatrixRowSize(g), (float *)inversed);
 //     InspectMatrix((float *)g, MatrixRowSize(g), MatrixColSize(g));
 //     InspectMatrix((float *)inversed, MatrixRowSize(inversed), MatrixColSize(inversed));
 
 //     float g[4][4] = {{1, 3, 5, 9}, {1, 3, 1, 7}, {4, 3, 9, 7}, {5, 2, 0, 9}};
 //     float inversed[4][4];
-//     matrix_inverse((float *)g, MatrixRowSize(g), (float *)inversed);
+//     MatrixInverse((float *)g, MatrixRowSize(g), (float *)inversed);
 //     InspectMatrix((float *)g, MatrixRowSize(g), MatrixColSize(g));
 //     InspectMatrix((float *)inversed, MatrixRowSize(inversed), MatrixColSize(inversed));
 //     getchar();

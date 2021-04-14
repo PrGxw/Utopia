@@ -40,8 +40,7 @@ DrawPixel(float x, float y)
     pixel[index] = ((Red << 16) | (Green << 8) | Blue);
 }
 
-static void
-FillScreenBuffer(Win64ScreenBuffer *Buffer)
+void ClearScreenBuffer(Win64ScreenBuffer *Buffer)
 {
     uint8 *Row = (uint8 *)Buffer->Memory;
     for (int Y = 0; Y < Buffer->Height; ++Y)
@@ -61,36 +60,89 @@ FillScreenBuffer(Win64ScreenBuffer *Buffer)
         }
         Row += Buffer->Pitch;
     }
+}
 
+static void
+FillScreenBuffer(Win64ScreenBuffer *Buffer)
+{
+    ClearScreenBuffer(Buffer);
     // projections
     // http://www.songho.ca/opengl/gl_projectionmatrix.html
-    // int square[8][3] = {{1, 1, -1}, {1, -1, -1}, {-1, 1, -1}, {-1, -1, -1}, {1, 1, -2}, {1, -1, -2}, {-1, 1, -2}, {-1, -1, -2}};
-    int square[8][3] = {{0,0,0}, {0,1,0}, {1,0,0}, {1,1,0},
-    {0,0,-1}, {0,1,-1}, {1,0,-1}, {1,1,-1}
-    };
+
+
+    /*
+     * temporary variables
+     */
+    static float theta;
+    // theta += 0.001;
+    theta += 0.001f * PI;
+    // static float distance;
+    // distance -= 0.001;
+
+    float camera_matrix[4][4];
+    IdentityMatrix4x4((float *)camera_matrix);
+    // Translate(0, 0, 0, (float *)camera_matrix);
+
+    float view_matrix[4][4];
+    MatrixInverse((float*)camera_matrix, 4, (float*)view_matrix);
+
+    /*
+     * temporary objects
+     */
+    int square[8][4] = { {1, 1, 1, 1}, {1, -1, 1, 1}, {-1, 1, 1, 1}, {-1, -1, 1, 1}, {1, 1, -1, 1}, {1, -1, -1, 1}, {-1, 1, -1, 1}, {-1, -1, -1, 1} };
+    /*
+     * image settings
+     */
+    float image_width = 16;
+    float image_height = 9;
+    float eye_distance = 1;
+
+
     for (int i = 0; i < MatrixRowSize(square); i++)
     {
-        float transform_matrix[4][4] = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}};
-
-        RotateXAxis(theta, (float *)transform_matrix);
-        // RotateYAxis(theta, (float *)transform_matrix);
-        // RotateZAxis(theta, (float *)transform_matrix);
-        theta += 0.001;
-
-        ProjectionMatrix((float *)transform_matrix);
-
         float vertex[4] = {};
-        for (int j = 0; j < 3; j++)
-        {
-            vertex[j] = (float)square[i][j];
+        for (int j = 0; j < 4; j++){
+            vertex[j] = square[i][j];
         }
-        vertex[3] = 1;
+        float transform_matrix[4][4];
+        IdentityMatrix4x4((float*) transform_matrix);
 
-        Point point = Project((float *)transform_matrix, MatrixRowSize(transform_matrix), MatrixColSize(transform_matrix),
-                              (float *)vertex, MatrixRowSize(vertex), MatrixColSize(vertex),
-                              ScreenBuffer.Width, ScreenBuffer.Height);
+        // 1. convert local to world
+        RotateXAxis(theta, (float*)transform_matrix);
+        RotateYAxis(theta, (float*)transform_matrix);
+        RotateZAxis(theta, (float*)transform_matrix);
+        Translate(0, 0, -7, (float*)transform_matrix);
 
-        DrawPixel(point.x, point.y);
+        // 2. convert to camera space
+        MatrixMultiply(
+            (float *) view_matrix, 4, 4,
+            (float *) transform_matrix, 4, 4,
+            (float *) transform_matrix
+        );
+        // 2.5 convert to image space
+        float point[4] = {};
+        MatrixMultiply((float *)transform_matrix, 4, 4,
+                       (float *)vertex, 4, 1,
+                       (float *)point);
+        float x = *(point + 0);
+        float y = *(point + 1);
+        float z = *(point + 2);
+        *(point + 0) = (x/-z) * eye_distance;
+        *(point + 1) = (y/-z) * eye_distance;
+        // 3. convert to NDC space
+        float ndc_point[2] = {};
+        *(ndc_point + 0) = (*(point + 0) + image_width / 2) / image_width;
+        *(ndc_point + 1) = (*(point + 1) + image_height / 2) / image_height;
+        if ((*(ndc_point + 0) > 1) || (*(ndc_point + 1) > 1) || (z >= 0) || (*(ndc_point + 0) < 0) || (*(ndc_point + 1) < 0))
+        {
+            continue;
+        }
+        // 5. convert to rasterspace
+        Point raster_point;
+        raster_point.x = (int)(*(ndc_point + 0) * Buffer->Width);
+        raster_point.y = (int)(*(ndc_point + 1) * Buffer->Height);
+        // 6. draw
+        DrawPixel(raster_point.x, raster_point.y);
     }
 }
 

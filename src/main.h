@@ -6,6 +6,8 @@
 #define local_persist static
 #define global_variable static
 
+#define PI 3.1415926f
+
 struct Win64WindowDimension
 {
     int Width;
