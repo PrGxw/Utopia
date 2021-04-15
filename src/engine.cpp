@@ -86,7 +86,7 @@ void IdentityMatrix4x4(float *matrix)
     }
 }
 
-bool ContainedInTriangle(Point* p1, Point* p2, Point* p3, Point* targetp)
+bool ContainedInTriangle(Point *p1, Point *p2, Point *p3, Point *targetp)
 {
     float A = TriangleArea(p1, p2, p3);
     float A1 = TriangleArea(p1, p2, targetp);
@@ -95,6 +95,23 @@ bool ContainedInTriangle(Point* p1, Point* p2, Point* p3, Point* targetp)
     return (A == (A1 + A2 + A3));
 }
 
-float TriangleArea(Point* p1, Point* p2, Point* p3){
-    return abs((p1->x*(p2->y - p3->y) + p2->x * (p3->y - p1->y) + p3->x * (p1->y - p2->y))/ 2.0f);
+float TriangleArea(Point *p1, Point *p2, Point *p3)
+{
+    return abs((p1->x * (p2->y - p3->y) + p2->x * (p3->y - p1->y) + p3->x * (p1->y - p2->y)) / 2.0f);
+}
+
+void FindTriangleBoudningBox(Point *vertices, Point *bounding_top_left, Point *bounding_bot_right)
+{
+    for (int i = 0; i < 3; i++)
+    {
+        Point* vertex = (vertices + i);
+        if ((bounding_top_left->x == NULL) || (vertex->x < bounding_top_left->x))
+            bounding_top_left->x = vertex->x;
+        if ((bounding_top_left->y == NULL) || (vertex->y < bounding_top_left->y))
+            bounding_top_left->y = vertex->y;
+        if ((bounding_bot_right->x == NULL) || (vertex->x > bounding_bot_right->x))
+            bounding_bot_right->x = vertex->x;
+        if ((bounding_bot_right->y == NULL) || (vertex->y > bounding_bot_right->y))
+            bounding_bot_right->y = vertex->y;
+    }
 }

@@ -28,4 +28,6 @@ struct Shape
 bool ContainedInTriangle(Point* p1, Point* p2, Point* p3, Point* targetp);
 float TriangleArea(Point* p1, Point* p2, Point* p3);
 
+void FindTriangleBoudningBox(Point* vertices, Point* bounding_top_left, Point* bounding_bot_right);
+
 #endif /* ENGINE */
