@@ -75,7 +75,7 @@ FillScreenBuffer(Win64ScreenBuffer *Buffer)
      */
     static float theta;
     // theta += 0.001;
-    theta += 0.001f * PI;
+    theta += 0.01f * PI;
     // static float distance;
     // distance -= 0.001;
 
@@ -90,6 +90,20 @@ FillScreenBuffer(Win64ScreenBuffer *Buffer)
      * temporary objects
      */
     int square[8][4] = { {1, 1, 1, 1}, {1, -1, 1, 1}, {-1, 1, 1, 1}, {-1, -1, 1, 1}, {1, 1, -1, 1}, {1, -1, -1, 1}, {-1, 1, -1, 1}, {-1, -1, -1, 1} };
+    Shape triangle_front;
+    float triangle_front_geometry[3][4] = { {1,1,0,1}, {1,-1,0,1}, {-1,1,0,1}};
+    triangle_front.geometry = (float*) &triangle_front_geometry;
+    triangle_front.num_elements = 3;
+
+    Shape triangle_back;
+    float triangle_back_geometry[3][4] = {{1,1,-1,1}, {1,-1,-1,1}, {-1,-1,-1,1}};
+    triangle_back.geometry = (float*) &triangle_back_geometry;
+    triangle_back.num_elements = 3;
+
+    Shape* shapes[2];
+    shapes[0] = &triangle_front;
+    shapes[1] = &triangle_back;
+
     /*
      * image settings
      */
@@ -97,53 +111,71 @@ FillScreenBuffer(Win64ScreenBuffer *Buffer)
     float image_height = 9;
     float eye_distance = 1;
 
-
-    for (int i = 0; i < MatrixRowSize(square); i++)
-    {
-        float vertex[4] = {};
-        for (int j = 0; j < 4; j++){
-            vertex[j] = square[i][j];
-        }
-        float transform_matrix[4][4];
-        IdentityMatrix4x4((float*) transform_matrix);
-
-        // 1. convert local to world
-        RotateXAxis(theta, (float*)transform_matrix);
-        RotateYAxis(theta, (float*)transform_matrix);
-        RotateZAxis(theta, (float*)transform_matrix);
-        Translate(0, 0, -7, (float*)transform_matrix);
-
-        // 2. convert to camera space
-        MatrixMultiply(
-            (float *) view_matrix, 4, 4,
-            (float *) transform_matrix, 4, 4,
-            (float *) transform_matrix
-        );
-        // 2.5 convert to image space
-        float point[4] = {};
-        MatrixMultiply((float *)transform_matrix, 4, 4,
-                       (float *)vertex, 4, 1,
-                       (float *)point);
-        float x = *(point + 0);
-        float y = *(point + 1);
-        float z = *(point + 2);
-        *(point + 0) = (x/-z) * eye_distance;
-        *(point + 1) = (y/-z) * eye_distance;
-        // 3. convert to NDC space
-        float ndc_point[2] = {};
-        *(ndc_point + 0) = (*(point + 0) + image_width / 2) / image_width;
-        *(ndc_point + 1) = (*(point + 1) + image_height / 2) / image_height;
-        if ((*(ndc_point + 0) > 1) || (*(ndc_point + 1) > 1) || (z >= 0) || (*(ndc_point + 0) < 0) || (*(ndc_point + 1) < 0))
+    for (int shape_index =0; shape_index < MatrixRowSize(shapes); shape_index ++){
+        Shape* shape = shapes[shape_index];
+        Point vertices[3] = {};
+        for (int i = 0; i < shape->num_elements; i++)
         {
-            continue;
+            float vertex[4] = {};
+            for (int j = 0; j < 4; j++){
+                vertex[j] = shape->geometry[(i*4)+j];
+            }
+            float transform_matrix[4][4];
+            IdentityMatrix4x4((float*) transform_matrix);
+
+            // 1. convert local to world
+            // RotateXAxis(theta, (float*)transform_matrix);
+            RotateYAxis(theta, (float*)transform_matrix);
+            // RotateZAxis(theta, (float*)transform_matrix);
+            Translate(0, 0, -2, (float*)transform_matrix);
+
+            // 2. convert to camera space
+            MatrixMultiply(
+                (float *) view_matrix, 4, 4,
+                (float *) transform_matrix, 4, 4,
+                (float *) transform_matrix
+            );
+            // 2.5 convert to image space
+            float point[4] = {};
+            MatrixMultiply((float *)transform_matrix, 4, 4,
+                        (float *)vertex, 4, 1,
+                        (float *)point);
+            float x = *(point + 0);
+            float y = *(point + 1);
+            float z = *(point + 2);
+            *(point + 0) = (x/-z) * eye_distance;
+            *(point + 1) = (y/-z) * eye_distance;
+
+            // 3. convert to NDC space
+            float ndc_point[2] = {};
+            *(ndc_point + 0) = (*(point + 0) + image_width / 2) / image_width;
+            *(ndc_point + 1) = (*(point + 1) + image_height / 2) / image_height;
+            if ((*(ndc_point + 0) > 1) || (*(ndc_point + 1) > 1) || (z >= 0) || (*(ndc_point + 0) < 0) || (*(ndc_point + 1) < 0)) {
+                continue;
+            }
+
+            // 5. convert to rasterspace
+            Point raster_point;
+            raster_point.x = (int)(*(ndc_point + 0) * Buffer->Width);
+            raster_point.y = (int)(*(ndc_point + 1) * Buffer->Height);
+            vertices[i] = raster_point;
+            // 6. draw
+            DrawPixel(raster_point.x, raster_point.y);
         }
-        // 5. convert to rasterspace
-        Point raster_point;
-        raster_point.x = (int)(*(ndc_point + 0) * Buffer->Width);
-        raster_point.y = (int)(*(ndc_point + 1) * Buffer->Height);
-        // 6. draw
-        DrawPixel(raster_point.x, raster_point.y);
+        for (int row = 0; row < Buffer->Height; row++){
+            for (int col = 0; col < Buffer->Width; col++){
+                Point cur_point;
+                cur_point.x = col;
+                cur_point.y = row;
+                if (ContainedInTriangle(&vertices[0], &vertices[1], &vertices[2], &cur_point)){
+                    DrawPixel(col, row);
+                }
+            }
+        }
+
     }
+
+
 }
 
 static Win64WindowDimension

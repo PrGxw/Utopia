@@ -1,7 +1,8 @@
 #ifndef MATRIX
 #define MATRIX
+
 #include "data_types.h"
-#include <math.h>
+#include "cmath"
 
 // TODO: this should be more generic, i.e. not matrix sizes,
 // but multidimentional array sizes

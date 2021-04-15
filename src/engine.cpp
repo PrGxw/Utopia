@@ -86,4 +86,15 @@ void IdentityMatrix4x4(float *matrix)
     }
 }
 
+bool ContainedInTriangle(Point* p1, Point* p2, Point* p3, Point* targetp)
+{
+    float A = TriangleArea(p1, p2, p3);
+    float A1 = TriangleArea(p1, p2, targetp);
+    float A2 = TriangleArea(p1, p3, targetp);
+    float A3 = TriangleArea(p2, p3, targetp);
+    return (A == (A1 + A2 + A3));
+}
 
+float TriangleArea(Point* p1, Point* p2, Point* p3){
+    return abs((p1->x*(p2->y - p3->y) + p2->x * (p3->y - p1->y) + p3->x * (p1->y - p2->y))/ 2.0f);
+}
