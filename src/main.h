@@ -1,6 +1,7 @@
 #include <windows.h>
 #include "data_types.h"
 #include "engine.h"
+#include "math.h"
 
 #define internal static
 #define local_persist static
@@ -26,4 +27,6 @@ struct Win64ScreenBuffer
 
 global_variable bool32 GlobalRunning;
 global_variable Win64ScreenBuffer ScreenBuffer;
+global_variable Win64ScreenBuffer ZBuffer;
 global_variable float theta;
+static bool fill = true;

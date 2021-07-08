@@ -86,7 +86,7 @@ void IdentityMatrix4x4(float *matrix)
     }
 }
 
-bool ContainedInTriangle(Point *p1, Point *p2, Point *p3, Point *targetp)
+bool ContainedInTriangleArea(Point *p1, Point *p2, Point *p3, Point *targetp)
 {
     float A = TriangleArea(p1, p2, p3);
     float A1 = TriangleArea(p1, p2, targetp);
@@ -95,16 +95,42 @@ bool ContainedInTriangle(Point *p1, Point *p2, Point *p3, Point *targetp)
     return (A == (A1 + A2 + A3));
 }
 
+float EdgeFunction(Point *p1, Point *p2, Point *targetp) {
+    return (targetp->x - p1->x) * (p2->y - p1->y) - (targetp->y - p1->y) * (p2->x - p1->x);
+}
+
+bool ContainedInTriangleEdgeFunction(Point *p1, Point *p2, Point *p3, Point *targetp)
+{
+    Point* points[3] = {p1, p2, p3};
+    bool contains = true;
+
+    for (int i = 0; i < 3; i++){
+        int j = (i+1) % 3;
+        contains &= (EdgeFunction(points[i], points[j], targetp) > 0);
+    }
+    return contains;
+}
+
+bool ContainedInTriangle(Shape *triangle, Point *targetp)
+{
+    Point *p1 = ((Point*)triangle->geometry)+0;
+    Point *p2 = ((Point*)triangle->geometry)+1;
+    Point *p3 = ((Point*)triangle->geometry)+2;
+    // return ContainedInTriangleArea(p1, p2, p3, targetp);
+    return ContainedInTriangleEdgeFunction(p1, p2, p3, targetp);
+}
+
 float TriangleArea(Point *p1, Point *p2, Point *p3)
 {
     return abs((p1->x * (p2->y - p3->y) + p2->x * (p3->y - p1->y) + p3->x * (p1->y - p2->y)) / 2.0f);
 }
 
-void FindTriangleBoudningBox(Point *vertices, Point *bounding_top_left, Point *bounding_bot_right)
+void FindTriangleBoudningBox(Shape *vertices, Point *bounding_top_left, Point *bounding_bot_right)
 {
-    for (int i = 0; i < 3; i++)
+    if (vertices->num_elements != 3) throw -1;
+    for (int i = 0; i < vertices->num_elements; i++)
     {
-        Point* vertex = (vertices + i);
+        Point *vertex = ((Point*)vertices->geometry)+i;
         if ((bounding_top_left->x == NULL) || (vertex->x < bounding_top_left->x))
             bounding_top_left->x = vertex->x;
         if ((bounding_top_left->y == NULL) || (vertex->y < bounding_top_left->y))
@@ -114,4 +140,42 @@ void FindTriangleBoudningBox(Point *vertices, Point *bounding_top_left, Point *b
         if ((bounding_bot_right->y == NULL) || (vertex->y > bounding_bot_right->y))
             bounding_bot_right->y = vertex->y;
     }
+}
+
+
+void PointToImage(Point *image_point, Point *vertex, float focal_distance){
+    float x = vertex->x;
+    float y = vertex->y;
+    float z = vertex->z;
+    image_point->x = (x / -z) * focal_distance;
+    image_point->y = (y / -z) * focal_distance;
+}
+
+void ImageToPoint(){
+    throw -1;
+}
+
+
+void ImageToNDC(Point *image_point, Point *ndc_point, float frame_height, float frame_width){
+    ndc_point->x = (image_point->x + frame_width / 2) / frame_width;
+    ndc_point->y = (image_point->y + frame_height / 2) / frame_height;
+}
+
+void NDCToImage(){
+    throw -1;
+}
+
+void NDCToRaster(Point *ndc_point, Point *raster_point, int height, int width){
+    raster_point->x = (int)(ndc_point->x * width);
+    raster_point->y = (int)(ndc_point->y * height);
+    // raster_point.z = image_point.z;
+}
+
+void RasterToNDC(){
+    throw -1;
+}
+
+
+float* AccessScreenBuffer(int row, int col, float* memory, int buffer_width){
+    return memory + row + buffer_width*col;
 }
