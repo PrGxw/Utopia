@@ -105,13 +105,13 @@ MatrixInverse(float *matrix, int len,
                float *result)
 {
     MatrixOfMinors(matrix, len, result);
-    printf("matrix of minors\n");
+    // printf("matrix of minors\n");
     InspectMatrix(result, len, len);
     MatrixTranspose(result, len, len, result);
 
-    printf("transposed\n");
+    // printf("transposed\n");
     InspectMatrix(result, len, len);
-    printf("original\n");
+    // printf("original\n");
     InspectMatrix(matrix, len, len);
     float determinant = 0;
     for (int i = 0; i < len; i++)
@@ -119,7 +119,7 @@ MatrixInverse(float *matrix, int len,
         determinant += matrix[i] * result[i * len];
     }
     MatrixScalarMultiply(result, len, len, 1 / determinant);
-    printf("inverse\n");
+    // printf("inverse\n");
     InspectMatrix(result, len, len);
 }
 
@@ -166,16 +166,16 @@ void MatrixMultiply(float *matrix1, int m1_row, int m1_col,
 
 void InspectMatrix(float *matrix, int num_row, int num_col)
 {
-    printf("\n");
+    // printf("\n");
     for (int row = 0; row < num_row; row++)
     {
         for (int col = 0; col < num_col; col++)
         {
-            printf("%f ", *matrix++);
+            // printf("%f ", *matrix++);
         }
-        printf("\n");
+        // printf("\n");
     }
-    printf("\n");
+    // printf("\n");
 }
 
 // int main()
