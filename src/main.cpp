@@ -88,10 +88,14 @@ bool IsInFront(win64_screen_buffer *ZBuffer, win64_screen_buffer *Buffer,
 
     float area = EdgeFunction(&screen_p1, &screen_p2, &screen_p3) / 2;
     float screen_w1 = EdgeFunction(&screen_p2, &screen_p3, target_p) / 2 / area;
-    float screen_w2 = EdgeFunction(&screen_p1, &screen_p3, target_p) / 2 / area;
+    if (screen_w1 < 0) return false;
+    float screen_w2 = EdgeFunction(&screen_p3, &screen_p1, target_p) / 2 / area;
+    if (screen_w2 < 0) return false;
     float screen_w3 = EdgeFunction(&screen_p1, &screen_p2, target_p) / 2 / area;
+    if (screen_w3 < 0) return false;
 
-    float interpolated_z = 1 / (screen_w1 / (screen_p1.z) + screen_w2 / (screen_p2.z) + screen_w3 / (screen_p3.z));
+    float interpolated_z = -1 / (screen_w1 / (screen_p1.z) + screen_w2 / (screen_p2.z) + screen_w3 / (screen_p3.z));
+    // float interpolated_z = screen_w1 * screen_p1.z + screen_w2 * screen_p2.z + screen_w3 * screen_p3.z;
 
     float *memory = (float *)ZBuffer->Memory;
     if (*(AccessScreenBuffer((int)target_p->x, (int)target_p->y, memory, Buffer->Width)) > interpolated_z)
@@ -212,7 +216,8 @@ FillScreenBuffer(win64_screen_buffer *Buffer, win64_screen_buffer *ZBuffer, game
             for (int col = (int)bounding_top_left.x; col <= (int)bounding_bot_right.x; col++)
             {
                 Point cur_point = {(float)col, (float)row, 0};
-                if (ContainedInTriangle(&raster_points, &cur_point) &&
+                if (
+                    // ContainedInTriangle(&raster_points, &cur_point) &&
                     IsInFront(ZBuffer, Buffer, &raster_points, focal_distance, &cur_point))
                 {
                     DrawPixel(cur_point.x, cur_point.y, shape->color_hex);
@@ -302,6 +307,8 @@ Win64MainWindowCallback(HWND Window,
                 theta += -0.01 * PI;
             }
         }
+        UserInput.Mouse.X = (LParam & 0xffff);
+        UserInput.Mouse.Y = (LParam & 0xffff0000) >> 16;
         // char str[256];
         // sprintf_s(str, sizeof(str), "X: %d, Y: %d\n", mouseX, mouseY);
         // OutputDebugStringA(str);
